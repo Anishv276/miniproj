@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blood Group Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, #ff512f, #dd2476);
+            color: white;
+            text-align: center;
+        }
+
+        .box {
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #00c6ff;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+
+        img {
+            max-width: 200px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Fingerprint Blood Group Detection</h1>
+
+<div class="box">
+
+<input type="file" id="file"><br><br>
+
+<button onclick="predict()">Predict</button>
+
+<img id="preview">
+
+<h2 id="result"></h2>
+<h3 id="confidence"></h3>
+
+<canvas id="chart"></canvas>
+
+</div>
+
+<script>
+function predict() {
+    const file = document.getElementById("file").files[0];
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        document.getElementById("preview").src = reader.result;
+    };
+    reader.readAsDataURL(file);
+
+    fetch("/upload", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        document.getElementById("result").innerText =
+            "Prediction: " + data.prediction;
+
+        document.getElementById("confidence").innerText =
+            "Confidence: " + data.confidence.toFixed(2) + "%";
+
+        new Chart(document.getElementById("chart"), {
+            type: "bar",
+            data: {
+                labels: ["Confidence"],
+                datasets: [{
+                    label: "%",
+                    data: [data.confidence]
+                }]
+            }
+        });
+    });
+}
+</script>
+
+</body>
+</html>
